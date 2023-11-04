@@ -1,0 +1,3 @@
+1x Joystick module
+7x Male to Female wires
+1x Analog to Digial Converter
