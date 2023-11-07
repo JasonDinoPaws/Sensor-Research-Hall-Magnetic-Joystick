@@ -1,0 +1,5 @@
+Material List:
+1x Hall Magnetic Sensor
+3x Male to Female wires
+
+So how the Hall Magnetic Sensor works is by if there is a magnetic field that could reach  its 3 cm field it will send a input value of 0 saying that there is a magnetic field that is reaching its sensor.
