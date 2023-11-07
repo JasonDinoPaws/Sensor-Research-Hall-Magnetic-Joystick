@@ -1,6 +1,7 @@
 from tkinter import *
 import keyboard
 from time import sleep
+from random import *
 
 window = Tk()
 window.configure(background='black')
@@ -13,7 +14,7 @@ c.pack()
 X,Y = c.winfo_reqwidth()/2,c.winfo_reqheight()/2
 LX,LY = 0,0
 Size = 25
-MLan = 30
+MLan = 25
 IsShift = False
 NS,SS = 2,5
 
@@ -59,6 +60,14 @@ def invert():
     YT.config(bg = IsShift and "black" or "grey56",fg = IsShift and "grey56" or "black")
     Spint.config(bg= IsShift and "black" or "grey56",fg = IsShift and "green2" or "red2")
 
+Objects = []
+
+def Object():
+    if random() >= .95:
+        X,Y = random() > .5 and -15 or c.winfo_reqwidth(),random()*c.winfo_reqheight()
+        Objects.append({"X": X, "Y": Y,"Size": 15,"Snake": [],"Speed":random()})
+        print(Objects)
+        
 
 try:
     while True:
@@ -80,8 +89,17 @@ try:
         elif len(snake) > 1:
             c.delete(snake[0])
             snake.pop(0)
-            sleep(.0025)
 
+        
+        #Object() 
+        for a in range(len(Objects)):
+            i = Objects[a]
+            i["X"] += ((X-i["X"])*i["Speed"])/100
+            i["Y"] += ((Y-i["Y"])*i["Speed"])/100
+            i["Snake"].append(c.create_rectangle(i["X"]-i["Size"],i["Y"]-i["Size"], i["X"]+i["Size"],i["Y"]+i["Size"], fill= "red", outline=""))
+            if len(i["Snake"]) > 1:
+                c.delete(i["Snake"][0])
+                i["Snake"].pop(0)
         
         window.update()
 except (EOFError,KeyboardInterrupt):
