@@ -1,7 +1,8 @@
 from tkinter import *
-import keyboard
 from time import sleep
 from random import *
+import RPi.GPIO as GPIO
+from gpiozero import MCP3008, DigitalInputDevice
 
 window = Tk()
 window.configure(background='black')
@@ -20,6 +21,13 @@ NS,SS = 2,5
 
 
 
+PX = MCP3008(channel=1, clock_pin=11, mosi_pin=10, miso_pin=9, select_pin=8)
+PP = 17
+PY = MCP3008(channel=0, clock_pin=11, mosi_pin=10, miso_pin=9, select_pin=8)
+
+
+GPIO.setup(PP, GPIO.IN, pull_up_down = GPIO.PUD_UP)
+
 buttons = []
 snake = []
 
@@ -29,10 +37,12 @@ def CreateButton(t,fun,X,Y,BG,W):
     buttons.append(butoo)
     
 def XMove():
-    return  (keyboard.is_pressed("a") or keyboard.is_pressed("Left")) and "l" or (keyboard.is_pressed("d") or keyboard.is_pressed("Right")) and "r" or "n"
+    X = PX.value > .6 and "r" or PX.value < .4 and "l" or "n"
+    return  X #or (keyboard.is_pressed("a") or keyboard.is_pressed("Left")) and "l" or (keyboard.is_pressed("d") or keyboard.is_pressed("Right")) and "r" or "n"
 
 def YMove():
-    return (keyboard.is_pressed("w") or keyboard.is_pressed("UP")) and "d" or (keyboard.is_pressed("s") or keyboard.is_pressed("Down")) and "u" or "n"
+    Y = PY.value > .6 and "d" or PY.value < .4 and "u" or "n"
+    return Y #or (keyboard.is_pressed("w") or keyboard.is_pressed("UP")) and "d" or (keyboard.is_pressed("s") or keyboard.is_pressed("Down")) and "u" or "n"
 
 def Close():
     window.destroy()
@@ -59,19 +69,11 @@ def invert():
     XT.config(bg = IsShift and "black" or "grey56",fg = IsShift and "grey56" or "black")
     YT.config(bg = IsShift and "black" or "grey56",fg = IsShift and "grey56" or "black")
     Spint.config(bg= IsShift and "black" or "grey56",fg = IsShift and "green2" or "red2")
-
-Objects = []
-
-def Object():
-    if random() >= .95:
-        X,Y = random() > .5 and -15 or c.winfo_reqwidth(),random()*c.winfo_reqheight()
-        Objects.append({"X": X, "Y": Y,"Size": 15,"Snake": [],"Speed":random()})
-        print(Objects)
         
 
 try:
     while True:
-        IsShift = keyboard.is_pressed("Shift")
+        IsShift = GPIO.input(PP) == 1 #or keyboard.is_pressed("Shift")
         X += (X > Size and XMove() == "l" and (IsShift and  -SS or -NS)) or (X < (c.winfo_reqwidth()-Size) and XMove() == "r" and (IsShift and  SS or NS)) or 0
         Y += (Y > Size and YMove() == "d" and (IsShift and  -SS or -NS)) or (Y < (c.winfo_height()-Size) and YMove() == "u" and (IsShift and  SS or NS)) or 0
 
@@ -89,17 +91,6 @@ try:
         elif len(snake) > 1:
             c.delete(snake[0])
             snake.pop(0)
-
-        
-        #Object() 
-        for a in range(len(Objects)):
-            i = Objects[a]
-            i["X"] += ((X-i["X"])*i["Speed"])/100
-            i["Y"] += ((Y-i["Y"])*i["Speed"])/100
-            i["Snake"].append(c.create_rectangle(i["X"]-i["Size"],i["Y"]-i["Size"], i["X"]+i["Size"],i["Y"]+i["Size"], fill= "red", outline=""))
-            if len(i["Snake"]) > 1:
-                c.delete(i["Snake"][0])
-                i["Snake"].pop(0)
         
         window.update()
 except (EOFError,KeyboardInterrupt):
